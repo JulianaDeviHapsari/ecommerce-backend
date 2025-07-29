@@ -71,6 +71,21 @@ class User extends Authenticatable
         ];
     }
 
+    public function getApiResponseSellerAttribute()
+    {
+        $productIds = $this->products()->pluck('id');
+
+        return [
+            'username' => $this->username,
+            'store_name' => $this->store_name,
+            'photo_url' => $this->photo_url,
+            'product_count' => $this->products()->count(),
+            'rating_count' => \App\Models\Product\Review::whereIn('product_id', $productIds)->count(),
+            'join_date' => $this->created_at->diffForHumans(),
+            'send_from' => optional($this->addresses()->where('is_default', true)->first())->getApiResponseAttribute()
+        ];
+    }
+
     public function getPhotoUrlAttribute()
     {
         if (is_null($this->photo)) {
@@ -83,5 +98,9 @@ class User extends Authenticatable
     public function addreses()
     {
         return $this->hasMany(\App\Models\Address::class);
+    }
+        public function products()
+    {
+        return $this->hasMany(\App\Models\Product::class);
     }
 }

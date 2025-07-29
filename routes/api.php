@@ -4,6 +4,8 @@ use App\Http\Controllers\AddressController;
 use App\Http\Controllers\AuthenticationController;
 use App\Http\Controllers\ForgotPasswordController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\CartController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -11,6 +13,7 @@ use Illuminate\Support\Facades\Route;
 //     return $request->user();
 // })->middleware('auth:sanctum');
 
+Route::post('/google-auth', [AuthenticationController::class, 'authGoogle']);
 Route::post('/resend_otp', [AuthenticationController::class, 'resendOtp']);
 Route::post('/register', [AuthenticationController::class, 'register']);
 Route::post('/check-otp-register', [AuthenticationController::class, 'verifyOtp']);
@@ -39,4 +42,16 @@ Route::middleware('auth:sanctum')->group(function() {
 
     Route::get('province', [AddressController::class, 'getProvince']);
     Route::get('city', [AddressController::class, 'getCity']);
+
+    Route::get('product', [HomeController::class, 'getProduct']);
+    Route::get('product/{slug}', [HomeController::class, 'getProductDetail']);
+    Route::get('product/{slug}/review', [HomeController::class, 'getProductReview']);
+    Route::get('seller/username', [HomeController::class, 'getSeelerDetail']);
+
+    Route::prefix('cart')->group(function() {
+        Route::get('/', [ChartController::class, 'getCart']);
+        Route::post('/add', [ChartController::class, 'addToCart']);
+        Route::post('/{uuid}', [ChartController::class, 'removeItemFromCart']);
+        Route::post('/{uuid}', [ChartController::class, 'updateItemFromCart']);
+    });
 });

@@ -8,6 +8,58 @@ use App\Models\User;
 
 class AuthenticationController extends Controller
 {
+    public function authGoogle()
+    {
+        $validator = \Validator::make(request()->all(), [
+            'id_token' => 'required'
+        ]);
+
+        if ($validator->fails()) {
+            return ResponseFormatter::error(400, $validator->errors());
+        }
+
+        $client = new \Google_Client(['client_id' => config('services.google.client_id')]);
+        $payload = $client->verifyIdToken(request()->token);
+
+        if (!$payload) {
+            $userid = $payload ['sub'];
+            $name = $payload ['name'];
+            $email = $payload ['email'];
+
+            $user = User::where('social_media_provider', 'google')->where('social_media_id', $userid)->first();
+            if(!is_null($user)) {
+                $token = $user->createToken(config('app.name'))->plainTextToken;
+
+                return ResponseFormatter::success([
+                    'access_token' => $token
+                ]);
+            } 
+                $user = User::where('email', $email)->first();
+                if (!is_null($user)) {
+                    $user->update([
+                        'social_media_provider' => 'google',
+                        'social_media_provider_id' => $userid
+                    ]);
+                   
+                } else {
+                    $user = User::create([
+                        'name' => $name,
+                        'email' => $email,
+                        'social_media_provider' => 'google',
+                        'social_media_provider_id' => $userid
+                    ]);
+
+                    $token = $user->createToken(config('app.name'))->plainTextToken;
+
+                    return ResponseFormatter::success([
+                        'access_token' => $token
+                    ]); 
+                }
+        } else {
+            return ResponseFormatter::error(400, null, ['Invalid ID token']);
+        }
+    }
+
     public function resendOtp()
     {
         $validator = \Validator::make(request()->all(), [
