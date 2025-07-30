@@ -260,8 +260,8 @@ class CartController extends Controller
         });
 
         $result = $this->getShippingOptions(
-            $sellerAddress->city->external_id,
-            $cart->address->city->external_id,
+            $sellerAddress->city->rajaongkir_subdistrict_id,
+            $cart->city->rajaongkir_subdistrict_id,
             $weight,
             request()->courier
         );
@@ -310,8 +310,8 @@ class CartController extends Controller
         });
 
         $result = $this->getShippingOptions(
-            $sellerAddress->city->external_id,
-            $cart->address->city->external_id,
+            $sellerAddress->city->rajaongkir_subdistrict_id,
+            $cart->city->rajaongkir_subdistrict_id,
             $weight,
             request()->courier
         );
@@ -336,12 +336,14 @@ class CartController extends Controller
     {
         $response = \Http::withHeaders([
             'key' => config('services.rajaongkir.key')
-        ])->post(config('services.rajaongkir.base_url') . '/cost', [
+        ])->asForm()->post(config('services.rajaongkir.base_url') . '/calculate/domestic-cost', [
             'origin' => $origin,
             'destination' => $destination,
             'weight' => $weight,
             'courier' => $courier
         ]);
+
+        
 
         $result = collect($response->object()->rajaongkir->results)->map(function($item){
             return [

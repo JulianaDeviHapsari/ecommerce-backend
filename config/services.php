@@ -18,10 +18,6 @@ return [
         'token' => env('POSTMARK_TOKEN'),
     ],
 
-    'resend' => [
-        'key' => env('RESEND_KEY'),
-    ],
-
     'ses' => [
         'key' => env('AWS_ACCESS_KEY_ID'),
         'secret' => env('AWS_SECRET_ACCESS_KEY'),
@@ -29,7 +25,20 @@ return [
     ],
 
     'google' => [
-        'client_id' =>env('GOOGLE_CLIENT'),
+        'client_id' => env('GOOGLE_CLIENT')
+    ],
+
+    'rajaongkir' => [
+        'base_url' => 'https://rajaongkir.komeerce.id/api/v1',
+        'key' => env(key: 'RAJAONGKIR_KEY'),
+    ],
+
+    'midtrans' => [
+        'server_key' => env('MIDTRANS_SERVER_KEY')
+    ],
+
+    'resend' => [
+        'key' => env('RESEND_KEY'),
     ],
 
     'slack' => [
