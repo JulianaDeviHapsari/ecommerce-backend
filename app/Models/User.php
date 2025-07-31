@@ -3,20 +3,22 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Bavix\Wallet\Traits\HasWallet;
+use Bavix\Wallet\Interfaces\Wallet;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
-class User extends Authenticatable
+class User extends Authenticatable implements Wallet
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable, HasApiTokens;
+    use HasWallet;
 
     /**
      * The attributes that are mass assignable.
      *
-     * @var list<string>
+     * @var array<int, string>
      */
     protected $fillable = [
         'username',
@@ -31,13 +33,13 @@ class User extends Authenticatable
         'email_verified_at',
         'password',
         'social_media_provider',
-        'social_media_id',        
+        'social_media_id',
     ];
 
     /**
      * The attributes that should be hidden for serialization.
      *
-     * @var list<string>
+     * @var array<int, string>
      */
     protected $hidden = [
         'password',
@@ -60,18 +62,30 @@ class User extends Authenticatable
     public function getApiResponseAttribute()
     {
         return [
-            'name' => $this-> name,  
-            'email' => $this-> email,
-            'photo_url' => $this-> photo_url,
-            'username' => $this-> username,
-            'phone' => $this-> phone, 
-            'store_name' => $this-> store_name,
-            'gender' => $this-> gender,
-            'birth_date' => $this-> birth_date,
+            'name' => $this->name,
+            'email' => $this->email,
+            'photo_url' => $this->photo_url,
+            'username' => $this->username,
+            'phone' => $this->phone,
+            'store_name' => $this->store_name,
+            'gender' => $this->gender,
+            'birth_date' => $this->birth_date,
+            'balance' => (float) $this->balance,
         ];
     }
 
-    public function getApiResponseSellerAttribute()
+    public function getApiResponseAsBuyerAttribute()
+    {
+        return [
+            'name' => $this->name,
+            'email' => $this->email,
+            'photo_url' => $this->photo_url,
+            'username' => $this->username,
+            'phone' => $this->phone,
+        ];
+    }
+
+    public function getApiResponseAsSellerAttribute()
     {
         $productIds = $this->products()->pluck('id');
 
@@ -95,12 +109,28 @@ class User extends Authenticatable
         return asset('storage/' . $this->photo);
     }
 
-    public function addreses()
+    public function addresses()
     {
-        return $this->hasMany(\App\Models\Address::class);
+        return $this->hasMany(\App\Models\Address\Address::class);
     }
-        public function products()
+
+    public function products()
     {
-        return $this->hasMany(\App\Models\Product::class);
+        return $this->hasMany(\App\Models\Product\Product::class, 'seller_id');
+    }
+
+    public function orders()
+    {
+        return $this->hasMany(\App\Models\Order\Order::class, 'user_id');
+    }
+
+    public function orderAsSeller()
+    {
+        return $this->hasMany(\App\Models\Order\Order::class, 'seller_id');
+    }
+
+    public function vouchers()
+    {
+    return $this->hasMany(\App\Models\Voucher::class, 'seller_id');
     }
 }
